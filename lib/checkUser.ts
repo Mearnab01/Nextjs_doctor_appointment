@@ -7,13 +7,13 @@ export const checkUser = async ()=>{
     // console.log("Current user: ", user);
 
     if(!user){
-        throw new Error("User not found")
+        console.warn("No user found in checkUser");
     }
 
     try {
         const loggedInUser = await db.user.findUnique({
             where: {
-                clerkUserId: user.id
+                clerkUserId: user?.id
             },
             include:{
                 transactions: {
@@ -32,13 +32,17 @@ export const checkUser = async ()=>{
             return loggedInUser;
         }
 
-        const name = `${user.firstName || "User"} ${user.lastName || ""}`.trim();
+        if (!user?.id) {
+            throw new Error("User ID is required to create a new user");
+        }
+
+        const name = `${user?.firstName || "User"} ${user?.lastName || ""}`.trim();
         const newUser = await db.user.create({
             data: {
-                clerkUserId: user.id,
-                email: user.emailAddresses[0]?.emailAddress || "",
+                clerkUserId: user?.id,
+                email: user?.emailAddresses[0]?.emailAddress || "",
                 name: name || "User",
-                imageUrl: user.imageUrl,
+                imageUrl: user?.imageUrl,
                 transactions:{
                     create: {
                         type: "CREDIT_PURCHASE",
