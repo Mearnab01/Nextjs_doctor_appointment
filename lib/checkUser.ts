@@ -6,9 +6,10 @@ export const checkUser = async ()=>{
     const user = await currentUser();
     // console.log("Current user: ", user);
 
-    if(!user){
-        console.warn("No user found in checkUser");
-    }
+        if (!user?.id) {
+            console.warn("No Clerk user found in checkUser");
+            return null;
+        }
 
     try {
         const loggedInUser = await db.user.findUnique({
@@ -54,8 +55,8 @@ export const checkUser = async ()=>{
         });
         return newUser;
         
-    } catch (error) {
-        console.log(error);
-        throw new Error("Error creating or fetching user")
+    } catch (error:unknown) {
+        console.error("checkUser failed:", error);
+        return null;
     }
 }
