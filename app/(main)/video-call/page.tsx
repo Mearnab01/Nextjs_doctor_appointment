@@ -7,9 +7,10 @@ type VideoCallPageProps = {
   };
 };
 
-export default function VideoCallPage({ searchParams }: VideoCallPageProps) {
-  const { sessionId, token } = searchParams;
-
+export default async function VideoCallPage({
+  searchParams,
+}: VideoCallPageProps) {
+  const { sessionId, token } = await searchParams;
   if (!sessionId || !token) {
     return (
       <div className="flex items-center justify-center h-screen text-muted-foreground">
