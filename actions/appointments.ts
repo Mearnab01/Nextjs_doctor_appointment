@@ -12,7 +12,7 @@ import { MediaMode } from "@vonage/video";
 // Initialize Vonage Video API client
 const credentials = new Auth({
   applicationId: process.env.NEXT_PUBLIC_VONAGE_APPLICATION_ID,
-  privateKey: process.env.VONAGE_PRIVATE_KEY,
+  privateKey: process.env.VONAGE_PRIVATE_KEY_PATH,
 });
 const options = {};
 const vonage = new Vonage(credentials, options);
@@ -335,4 +335,105 @@ export async function bookAppointment(formData: FormData) {
     console.error("Failed to book appointment:", error);
     
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Helper: Safe FormData string extractor */
+/* ------------------------------------------------------------------ */
+function getString(formData: FormData, key: string): string {
+  const value = formData.get(key);
+
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new Error(`${key} is required`);
+  }
+
+  return value;
+}
+
+/* ------------------------------------------------------------------ */
+/* Generate Video Token */
+/* ------------------------------------------------------------------ */
+export async function generateVideoToken(
+  formData: FormData
+): Promise<{
+  success: true;
+  videoSessionId: string;
+  token: string;
+}> {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const user = await db.user.findUnique({
+    where: { clerkUserId: userId },
+  });
+  if (!user) throw new Error("User not found");
+
+  const appointmentId = getString(formData, "appointmentId");
+
+  const appointment = await db.appointment.findUnique({
+    where: { id: appointmentId },
+  });
+  if (!appointment) throw new Error("Appointment not found");
+
+  if (
+    appointment.doctorId !== user.id &&
+    appointment.patientId !== user.id
+  ) {
+    throw new Error("Not authorized to join this call");
+  }
+
+  if (appointment.status !== "SCHEDULED") {
+    throw new Error("Appointment is not scheduled");
+  }
+
+  if (!appointment.videoSessionId) {
+    throw new Error("Video session has not been created");
+  }
+
+  /* -------------------------------------------------------------- */
+  /* Time validation */
+  /* -------------------------------------------------------------- */
+  const now = new Date();
+  const startTime = new Date(appointment.startTime);
+  const minutesUntilStart =
+    (startTime.getTime() - now.getTime()) / (1000 * 60);
+
+  if (minutesUntilStart > 30) {
+    throw new Error(
+      "Call can only be joined 30 minutes before the scheduled time"
+    );
+  }
+
+  /* -------------------------------------------------------------- */
+  /* Token expiration (1 hour after appointment end) */
+  /* -------------------------------------------------------------- */
+  const endTime = new Date(appointment.endTime);
+  const expireTime =
+    Math.floor(endTime.getTime() / 1000) + 60 * 60;
+
+  const connectionData = JSON.stringify({
+    userId: user.id,
+    name: user.name,
+    role: user.role,
+  });
+
+  const token = vonage.video.generateClientToken(
+    appointment.videoSessionId,
+    {
+      role: "publisher",
+      expireTime,
+      data: connectionData,
+    }
+  );
+
+  await db.appointment.update({
+    where: { id: appointmentId },
+    data: { videoSessionToken: token },
+  });
+
+  return {
+    success: true,
+    videoSessionId: appointment.videoSessionId,
+    token,
+  };
 }

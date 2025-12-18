@@ -62,7 +62,7 @@ export default async function DoctorDashboardPage() {
       <div className="md:col-span-3">
         <TabsContent value="appointments" className="border-none p-0">
           <DoctorAppointmentsList
-            appointments={appointmentsData.appointments || []}
+            appointments={appointmentsData?.appointments || []}
           />
         </TabsContent>
 
