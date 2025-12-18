@@ -25,6 +25,7 @@ import { updateDoctorStatus } from "@/actions/admin";
 import useFetch from "@/hooks/use-fetch";
 //import { BarLoader } from "react-spinners";
 
+/* Types */
 // Define Doctor interface
 interface Doctor {
   id: string;
@@ -148,7 +149,7 @@ export function PendingDoctors({ doctors }: PendingDoctorsProps) {
       {/* Doctor Details Dialog */}
       {selectedDoctor && (
         <Dialog open={!!selectedDoctor} onOpenChange={handleCloseDialog}>
-          <DialogContent className="max-w-3xl">
+          <DialogContent className="max-w-4xl">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold text-white">
                 Doctor Verification Details
@@ -270,7 +271,7 @@ export function PendingDoctors({ doctors }: PendingDoctorsProps) {
                   handleUpdateStatus(selectedDoctor.id, "VERIFIED")
                 }
                 disabled={!!loading}
-                className="bg-emerald-600 hover:bg-emerald-700"
+                className="bg-emerald-600 hover:bg-emerald-700 hover:cursor-pointer"
               >
                 <Check className="mr-2 h-4 w-4" />
                 Approve

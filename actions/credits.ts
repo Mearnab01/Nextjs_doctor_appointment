@@ -19,7 +19,7 @@ const APPOINTMENT_CREDIT_COST = 2;
  * Checks user's subscription and allocates monthly credits if needed
  * This should be called on app initialization (e.g., in a layout component)
  */
-export async function checkAndAllocateCredits(user) {
+export async function checkAndAllocateCredits(user: any) {
   try {
     if (!user) {
       return null;
@@ -110,7 +110,7 @@ export async function checkAndAllocateCredits(user) {
     revalidatePath("/appointments");
 
     return updatedUser;
-  } catch (error) {
+  } catch (error:any) {
     console.error(
       "Failed to check subscription and allocate credits:",
       error.message
@@ -122,7 +122,7 @@ export async function checkAndAllocateCredits(user) {
 /**
  * Deducts credits for booking an appointment
  */
-export async function deductCreditsForAppointment(userId, doctorId) {
+export async function deductCreditsForAppointment(userId: string, doctorId: string) {
   try {
     const user = await db.user.findUnique({
       where: { id: userId },
@@ -131,6 +131,10 @@ export async function deductCreditsForAppointment(userId, doctorId) {
     const doctor = await db.user.findUnique({
       where: { id: doctorId },
     });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
 
     // Ensure user has sufficient credits
     if (user.credits < APPOINTMENT_CREDIT_COST) {
@@ -189,7 +193,7 @@ export async function deductCreditsForAppointment(userId, doctorId) {
     });
 
     return { success: true, user: result };
-  } catch (error) {
+  } catch (error:any) {
     console.error("Failed to deduct credits:", error);
     return { success: false, error: error.message };
   }

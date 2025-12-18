@@ -5,7 +5,7 @@ import {
   getPendingPayouts,
 } from "@/actions/admin";
 
-import VerifiedDoctor from "./_components/verified-doctor";
+import { VerifiedDoctor } from "./_components/verified-doctor";
 import { PendingDoctors } from "./_components/pending-doctors";
 
 export default async function AdminPage() {
@@ -20,11 +20,23 @@ export default async function AdminPage() {
   return (
     <>
       <TabsContent value="pending" className="border-none p-0">
-        <PendingDoctors doctors={(pendingDoctorsData.doctors || []).filter(d => d.name !== null) as any} />
+        <PendingDoctors
+          doctors={
+            (pendingDoctorsData.doctors || []).filter(
+              (d) => d.name !== null
+            ) as any
+          }
+        />
       </TabsContent>
 
       <TabsContent value="doctors" className="border-none p-0">
-        <VerifiedDoctor doctors={verifiedDoctorsData.doctors || []} />
+        <VerifiedDoctor
+          doctors={
+            (verifiedDoctorsData.doctors || []).filter(
+              (d) => d.name !== null
+            ) as any
+          }
+        />
       </TabsContent>
     </>
   );

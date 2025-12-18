@@ -1,6 +1,6 @@
 import React from "react";
 
-const AppointmentsLists = () => {
+const AppointmentsLists = ({ appointments }: { appointments: any[] }) => {
   return <div></div>;
 };
 
